@@ -1,4 +1,5 @@
 import <dizzyj_mayam.ash>;
+import "clanlib.ash"
 ###
 # Try to ascertain current state.
 #
@@ -188,6 +189,35 @@ void pvpEnable()
         }
 }
 
+void sendPeril(){
+    cl_clannie[int] clannies = get_clannies();
+    string title;
+    string name;
+    string rank;
+
+    cl_clannie[int] potentially_perilable_clannies;
+    int cur = 0;
+    foreach id, clannie in clannies{
+        if(clannie.is_active){
+            potentially_perilable_clannies[cur] = clannie;
+            cur += 1;
+        }
+    }
+
+    int num_potentially_perilable_clannies = count(potentially_perilable_clannies);
+
+    # Don't care if they're perilable.. just keep periling until we get to 3 perilsForeseen
+    while (get_property("_perilsForeseen").to_int() < 3){
+        cl_clannie pclannie = potentially_perilable_clannies[random(num_potentially_perilable_clannies)];
+        visit_url("inventory.php?action=foresee");
+        visit_url("choice.php?whichchoice=1558&option=1&who="+to_string(pclannie.id));
+        print("Tried to peril "+to_string(pclannie));
+    }
+
+    print("Perils done: "+to_string(get_property("_perilsForeseen"))+". Exiting Peridot.", "blue");
+
+}
+
 void checkPvPStatus(){
 
     ## Check if Mayam explosion has been used.
@@ -273,6 +303,9 @@ void breakfast() {
     if (!(to_boolean(get_property("_pirateBellowUsed")))){
         use_skill(1, $skill[Pirate bellow]);
     }
+    visit_url("shop.php?whichshop=september");
+    sendPeril();
+
 }
 
 void dinner() {
@@ -317,13 +350,29 @@ void prepAscend() {
       retrieve_item(3, thing);
     }
 
-    print("\n    Stoopering","green");
 
-    ## Switch to stooper
-    use_familiar($familiar[stooper]);
 
-    ## Drink distillate for advs
-    cli_execute("drink stillsuit distillate");
+    if (get_property("_dizzy_last_stooper") != (now_to_string("yyyyMMdd")) ) {
+        ### Means either its not set, or probably just set to the day Before...
+        print("Last stooper: "+to_string(get_property("_dizzy_last_stooper")));
+        set_property("_dizzy_stooper_drink","false");
+        set_property("_dizzy_stooper_adv","false");
+    }
+
+    print("\nChecking stooper","green");
+
+    ### If we haven't drunk stooper yet
+    if ( ! to_boolean( get_property("_dizzy_stooper_drink") ) ) {
+        print("\nStooper hasn't been drunk today.. Drinking");
+
+        ## Switch to stooper
+        use_familiar($familiar[stooper]);
+
+        ## Drink distillate for advs
+        cli_execute("drink stillsuit distillate");
+        set_property("_dizzy_stooper_drink","true");
+
+    }
 
     ## Set choice for Skeleton Store NC, and adventure in Skeleton store
     set_property("choiceAdventure1060","1");
@@ -334,20 +383,33 @@ void prepAscend() {
     string mon3 = to_lower_case("swarm of skulls");
 
     print("\n    Ice House Monster: "+iceHouseMonster(),"green");
-    while ( iceHouseMonster() != mon1 && iceHouseMonster() != mon2 && iceHouseMonster() != mon3) {
-        print("\n    Adventuring to get correct Ice House Monster","green");
-        adv1(to_location(439), 1, "if monsterid 1746 attack; repeat; endif; use ice house;");
-    }
-    ## By now we should have an ice housed skeleton
-    print("\n    Ice House Monster: "+iceHouseMonster(),"green");
 
-    print("\n    Using remaining advs in Barf Mountain","green");
-    while ( my_adventures() > 0 ){
-        adv1(to_location(442), 1, "");
+    ### If we haven't adventured with stooper yet AND we have adventures
+    if ( ! to_boolean( get_property("_dizzy_stooper_adv") ) && my_adventures() > 0) {
+        print("\nStooper advs not used today, and we have more than 0 adventures.");
+        while ( iceHouseMonster() != mon1 && iceHouseMonster() != mon2 && iceHouseMonster() != mon3) {
+            print("\n    Adventuring to get correct Ice House Monster","green");
+            adv1(to_location(439), 1, "if monsterid 1746 attack; repeat; endif; use ice house;");
+        }
+        ## By now we should have an ice housed skeleton
+        print("\n    Ice House Monster: "+iceHouseMonster(),"green");
+
+        print("\n    Using remaining advs in Barf Mountain","green");
+        while ( my_adventures() > 0 ){
+            adv1(to_location(442), 1, "attack; repeat");
+        }
+
+        set_property("_dizzy_stooper_adv", "true");
+        set_property("_dizzy_last_stooper", now_to_string("yyyyMMdd"));
     }
 
     print("\n    Picking Garden","green");
     cli_execute("garden pick");
+
+    print("\n    Spending Sept-Embers", "green");
+    buy($coinmaster[Sept-Ember Censer], 3, $item[Mmm-brr! brand mouthwash]);
+    buy($coinmaster[Sept-Ember Censer], 1, $item[wheel of camembert]);
+
 
 }
 
@@ -393,7 +455,7 @@ boolean case5 = false;
 boolean case7 = false;
 string casenum = '1';
 
-cli_execute("git update");
+#cli_execute("git update");
 # Case 1
 if ( (!ascended) && (!garboed) && (aftercore) ) {
     case1 = true;
