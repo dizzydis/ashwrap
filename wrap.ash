@@ -336,6 +336,7 @@ void prepInstancSCCS() {
     set_property("_instant_skipCalzoneOfLegend", "true");
     set_property("_instant_skipPizzaOfLegend", "true");
     set_property("_instant_skipDeepDishOfLegend", "true");
+    set_property("instant_explicitlyExcludedBuffs","2806,2899,2742,2738,2736,2735,2729,2741");
 }
 
 void prepAscend() {
