@@ -332,6 +332,12 @@ void callGarbo() {
     cli_execute("garbo");
 }
 
+void prepInstancSCCS() {
+    set_property("_instant_skipCalzoneOfLegend", "true");
+    set_property("_instant_skipPizzaOfLegend", "true");
+    set_property("_instant_skipDeepDishOfLegend", "true");
+}
+
 void prepAscend() {
     ## Obtain things I need
     print("\nAscension Prep!","blue");
@@ -533,6 +539,7 @@ switch ( casenum ) {
         print("We need to complete our run of instantsccs and run garbo");
 
 
+        prepInstancSCCS();
         cli_execute("instantsccs");
         pvpEnable();
         breakfast();
