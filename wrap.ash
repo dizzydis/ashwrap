@@ -185,7 +185,7 @@ void pvpEnable()
         if(!hippy_stone_broken())
         {
                 visit_url("peevpee.php?action=smashstone&pwd&confirm=on&shatter=Smash+that+Hippy+Crap%21");     //break hippy stone
-                visit_url("peevpee.php?action=pledge&place=fight&pwd");                                                                                 //pledge allegiance
+                visit_url("peevpee.php?action=pledge&place=fight&pwd");                                                                   //pledge allegiance
         }
 }
 
