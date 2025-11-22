@@ -332,11 +332,20 @@ void callGarbo() {
     cli_execute("garbo");
 }
 
+
+#boolean take_storage(int qty ,item it )
+#
+#    qty is the quantity to move
+#    it is the item to move
+
 void prepInstancSCCS() {
     set_property("_instant_skipCalzoneOfLegend", "true");
     set_property("_instant_skipPizzaOfLegend", "true");
     set_property("_instant_skipDeepDishOfLegend", "true");
     set_property("instant_explicitlyExcludedBuffs","2806,2899,2742,2738,2736,2735,2729,2741");
+    foreach thing in $items[Stick-Knife of Loathing] {
+        take_storage(1, thing);
+    }
 }
 
 void prepAscend() {
